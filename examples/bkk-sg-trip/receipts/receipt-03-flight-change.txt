@@ -1,0 +1,5 @@
+Vendor: Singapore Airlines
+Date: 2026-08-12
+Category: Flight change fee
+Item: Rebooking fee, return flight moved one day later ... THB 4500
+Total: THB 4500

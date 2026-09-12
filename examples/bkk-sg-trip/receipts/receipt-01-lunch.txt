@@ -1,0 +1,5 @@
+Vendor: Tian Tian Chicken Rice
+Date: 2026-08-10
+Category: Meal - Lunch
+Item: Chicken rice set ... THB 180
+Total: THB 180

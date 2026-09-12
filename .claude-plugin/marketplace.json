@@ -1,0 +1,15 @@
+{
+  "name": "expense-tools",
+  "owner": { "name": "Theerayut Attajak" },
+  "metadata": {
+    "description": "Expense automation plugins for Claude Code.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "expense-claim-review",
+      "source": "./",
+      "description": "Turn receipts and policy into auditable reimbursement decisions."
+    }
+  ]
+}

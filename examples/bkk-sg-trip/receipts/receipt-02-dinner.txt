@@ -1,0 +1,8 @@
+Vendor: Jumbo Seafood
+Date: 2026-08-11
+Category: Meal - Dinner
+Items:
+  Chilli crab ......... THB 900
+  Rice & sides ........ THB 120
+  Tiger beer x2 ....... THB 260
+Total: THB 1280
