@@ -1,4 +1,5 @@
 ---
+name: setup-expense-policy
 description: Set up, review, or update the expense policy used by every expense review.
 argument-hint: [policy PDF/document path, or nothing to be asked]
 ---

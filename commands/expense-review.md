@@ -1,4 +1,5 @@
 ---
+name: expense-review
 description: Review a submitted expense claim against the expense policy and produce an auditable decision.
 argument-hint: [submission Sheet URL, CSV, or folder path]
 ---
