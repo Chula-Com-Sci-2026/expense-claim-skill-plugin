@@ -1,0 +1,5 @@
+Vendor: Din Tai Fung
+Date: 2026-08-15
+Category: Meal - Lunch
+Item: Xiao long bao set ... THB 420
+Total: THB 420

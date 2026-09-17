@@ -1,9 +1,9 @@
 # Expense Claim Review — a Claude Code plugin
 
-Turn receipts and a policy into **auditable reimbursement decisions**. The plugin
-reads a trip folder, itemizes each receipt, checks it against the policy and the
-trip window, and produces a claim or an exception record — with a deterministic
-hook that blocks out-of-policy writes and logs every decision.
+Two roles, two commands, one separation of duties. An **employee** turns a pile of
+receipts into a clean submission Google Sheet; **finance** checks that submission
+against a stored policy and produces an auditable reimbursement decision — with a
+deterministic hook that blocks out-of-policy writes and logs every decision.
 
 This repo is both a **plugin** and a one-plugin **marketplace**, so it installs
 straight from GitHub.
@@ -32,19 +32,48 @@ claude plugin validate ./expense-claim-review   # schema check before you push
 
 ## Use
 
+### 0. Once — set up the policy
+
 ```bash
-/expense examples/bkk-sg-trip
+/setup-expense-policy ./company-policy.pdf
 ```
 
-Claude reads the folder's `expense-policy.md`, `trip.md`, `receipts/`, and
-`claims.csv`, then writes three artifacts into that folder:
+Attach a PDF, DOCX, or photo of the policy, or just write the rules out. It is
+normalized and stored at `~/.expense-claim-review/policy.md` with a version and
+effective dates, and reused by every later review. Run it again to check what's
+active, amend a rule, or replace an expired policy — old versions are kept.
 
-- `EXPENSE_CLAIM_REVIEW.md` — audit-ready report with a decision per line
+### 1. Employee — submit
+
+```bash
+/expense-submit ./my-trip
+```
+
+Or run it bare and attach receipt photos when asked. Reads images, PDFs, or text
+receipts and writes `submission.csv` + `submission.md`, then uploads the CSV to
+Drive as a **Google Sheet** with one row per expense: date, vendor, description,
+category, price, currency, receipt file, and an advisory flag.
+
+It never says *approved* or *claimable* — only "this looks likely to be reduced."
+The decision stays with finance.
+
+### 2. Finance — review
+
+```bash
+/expense-review ./my-trip
+```
+
+Accepts the submission Sheet URL, a `submission.csv`, or a bare trip folder. It
+re-reads the original receipts rather than trusting the submission, applies the
+stored policy line by line, and writes:
+
+- `EXPENSE_CLAIM_REVIEW.md` — audit-ready report, a policy clause per decision
 - `claims.csv` — approved lines appended
 - `exceptions-queue.csv` — flagged lines awaiting a human decision
+- a **review Google Sheet** to share back with the employee
 
-The `expense-claim-review` skill also fires automatically when you ask Claude to
-review a trip's expenses, without typing the command.
+Both skills also fire from plain English — "help me file these receipts", "check
+this claim against our policy" — without typing a command.
 
 ## What's inside
 
@@ -54,22 +83,45 @@ expense-claim-review/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # makes the repo installable from GitHub
 ├── commands/
-│   └── expense.md           # /expense entry point
+│   ├── setup-expense-policy.md
+│   ├── expense-submit.md    # employee entry point
+│   └── expense-review.md    # finance entry point
 ├── skills/
-│   └── expense-claim-review/
-│       └── SKILL.md         # the core: the whole review flow
-├── agents/                  # optional sub-agents (bonus)
-│   ├── receipt-reader.md
-│   ├── policy-checker.md
-│   └── claim-writer.md
+│   ├── setup-expense-policy/SKILL.md
+│   ├── expense-submit/SKILL.md
+│   └── expense-review/SKILL.md
+├── agents/
+│   ├── receipt-reader.md    # shared — reads images, PDFs, text
+│   ├── policy-normalizer.md # setup side
+│   ├── policy-checker.md    # finance side
+│   └── claim-writer.md      # finance side
 ├── hooks/
 │   ├── hooks.json           # PreToolUse (block) + PostToolUse (log)
 │   └── scripts/
 │       ├── block-out-of-policy.sh
 │       └── log-decision.sh
 └── examples/
-    └── bkk-sg-trip/         # synthetic test data (4 receipts)
+    └── bkk-sg-trip/         # synthetic test data (4 receipts + a submission)
 ```
+
+## Why the split matters
+
+| | `/expense-submit` | `/expense-review` |
+| --- | --- | --- |
+| Role | Employee | Finance |
+| Reads | `receipts/`, `trip.md` | policy, `claims.csv`, **and the receipts again** |
+| Question | "Is my package complete?" | "Does it pass policy?" |
+| May say "approved" | Never | Yes |
+
+Three controls keep it honest:
+
+1. **Submit is advisory only.** If the employee side could stamp verdicts, finance
+   would be rubber-stamping the claimant's own conclusion.
+2. **Finance re-derives from the receipts.** The submission is a *claim about* the
+   receipts, written by the person being paid, and could have been edited after the
+   fact. Mismatches are flagged `MANIFEST-MISMATCH` and the receipt wins.
+3. **Some checks only exist on the finance side.** `DUPLICATE` needs `claims.csv` —
+   prior claims across people and trips, which an employee should not be reading.
 
 ## Test cases in `examples/bkk-sg-trip`
 
@@ -82,15 +134,19 @@ expense-claim-review/
 
 Expected total claimable: **THB 980**.
 
+`expense-policy.md` in that folder doubles as a sample source document for
+`/setup-expense-policy`. To exercise `MANIFEST-MISMATCH`, edit a `price` in
+`submission.csv` so it disagrees with its receipt.
+
 ## Prove it works (baseline vs plugin)
 
 Run the same 4 receipts twice and compare:
 
 1. **Baseline** — a plain prompt ("review these expenses") with no plugin.
-2. **Plugin** — `/expense examples/bkk-sg-trip`.
+2. **Plugin** — `/expense-submit` then `/expense-review`.
 
 Compare on: policy violations caught, missing-approval detection, duplicate
-prevention, and whether each decision cites a policy clause (audit clarity).
+prevention, tampering detection, and whether each decision cites a policy clause.
 
 ## License
 
