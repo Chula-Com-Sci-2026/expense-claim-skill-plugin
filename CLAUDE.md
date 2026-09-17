@@ -21,15 +21,18 @@ installable from GitHub.
 claude plugin validate .            # schema-check the manifests before pushing
 claude --plugin-dir .               # load the plugin from this working tree
 claude plugin list                  # confirm it loaded
-bash tests/hooks.sh                 # the only automated tests (hook scripts)
+bash tests/hooks.sh                 # automated: hook scripts (7 checks)
+bash tests/golden-path.sh           # grades the artifacts of a review run (14 checks)
+bash tests/golden-path.sh --reset   # restore claims.csv, clear outputs, before re-running
 
 /setup-expense-policy examples/bkk-sg-trip/expense-policy.md   # once
 /expense-submit examples/bkk-sg-trip                           # employee side
 /expense-review examples/bkk-sg-trip                           # finance side
 ```
 
-`tests/hooks.sh` covers the deterministic hook scripts. Everything else is prose
-executed by a model, so skill behaviour is verified manually — the full matrix,
+`tests/hooks.sh` covers the deterministic hook scripts, and `tests/golden-path.sh`
+grades the artifacts a review leaves behind — you drive the skill, the script scores
+the result. The rest is prose executed by a model, so it is verified manually — the full matrix,
 including the adversarial invariant cases, is in `docs/TEST-CASES.md`, with fixtures
 in `examples/edge-cases/`. The regression check is the example trip: a correct
 review yields **THB 980** total claimable, with receipt 01 approved in full, 02 capped

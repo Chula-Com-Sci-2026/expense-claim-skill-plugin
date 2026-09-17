@@ -5,7 +5,7 @@ Three layers, tested differently:
 | Layer | How | Where |
 | --- | --- | --- |
 | Hook scripts | **Automated** — deterministic shell/Python | `tests/hooks.sh` |
-| Skill behaviour | **Manual** — run the command, check the artifacts | this document |
+| Skill behaviour | **Semi-automated** — you run the command, a script grades the artifacts | `tests/golden-path.sh` |
 | Invariants | **Manual** — adversarial prompts that try to break a rule | `INV-*` below |
 
 There is no automated test for skill behaviour, because the "code" is prose and the
@@ -15,8 +15,7 @@ run and get a yes/no.
 **Reset between runs:**
 
 ```bash
-git checkout examples/bkk-sg-trip/claims.csv
-rm -f examples/bkk-sg-trip/{EXPENSE_CLAIM_REVIEW.md,exceptions-queue.csv} audit-log.txt
+bash tests/golden-path.sh --reset
 ```
 
 Forgetting the `claims.csv` reset is the most common false failure: a second review
@@ -71,7 +70,11 @@ single test — a decision that cannot cite a stored clause is not auditable.
 
 ### REV-02 — the golden path
 
-`/expense-review examples/bkk-sg-trip` with the policy configured.
+`/expense-review examples/bkk-sg-trip` with the policy configured, then:
+
+```bash
+bash tests/golden-path.sh      # grades the artifacts: 14 checks, GP-01..GP-14
+```
 
 | Line | Amount | Expected verdict | Claimable |
 | --- | --- | --- | --- |
