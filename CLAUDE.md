@@ -24,6 +24,7 @@ claude plugin list                  # confirm it loaded
 bash tests/hooks.sh                 # automated: hook scripts (7 checks)
 bash tests/golden-path.sh           # grades the artifacts of a review run (14 checks)
 bash tests/golden-path.sh --reset   # restore claims.csv, clear outputs, before re-running
+python3 docs/flow.gen.py            # regenerate docs/flow.excalidraw (run from repo root)
 
 /setup-expense-policy examples/bkk-sg-trip/expense-policy.md   # once
 /expense-submit examples/bkk-sg-trip                           # employee side
@@ -72,6 +73,21 @@ someone sent") so the wrong one does not fire.
   audit line to `$CLAUDE_PROJECT_DIR/audit-log.txt`. Both read hook JSON on stdin, parse
   it with an inline `python3` heredoc, and exit 0 on unparseable input so a malformed
   payload never wedges the session.
+
+### Docs and diagrams
+
+`docs/flow.excalidraw` is **generated** — edit `docs/flow.gen.py` and re-run it from the
+repo root, never the JSON. `docs/flow.mmd` is a hand-maintained Mermaid rendering of the
+same two-lane graph; a pipeline change means updating both, or they drift.
+
+The marketplace is named `expense-tools`, not the plugin name, so the install id is
+`expense-claim-review@expense-tools`.
+
+`audit-log.txt` is written to `$CLAUDE_PROJECT_DIR` — the repo root, not the trip folder.
+
+Each command carries a `name:` in its frontmatter, which registers the bare
+`/expense-submit` as an alias for `/expense-claim-review:expense-submit`. Drop the
+`name:` and only the namespaced form resolves.
 
 ### Invariants worth preserving
 

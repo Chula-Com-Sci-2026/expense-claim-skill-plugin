@@ -1,4 +1,5 @@
 ---
+name: expense-submit
 description: Prepare an expense submission from your receipts and produce a Google Sheet to send to finance.
 argument-hint: [receipt files or folder path]
 ---
