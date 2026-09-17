@@ -2,3 +2,6 @@
 audit-log.txt
 EXPENSE_CLAIM_REVIEW.md
 exceptions-queue.csv
+
+# macOS
+.DS_Store

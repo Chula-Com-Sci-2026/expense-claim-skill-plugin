@@ -1,0 +1,24 @@
+%% Paste into Excalidraw: hamburger menu > Mermaid to Excalidraw
+flowchart TB
+  subgraph EMP["EMPLOYEE"]
+    A["/expense-submit"] --> B{"Receipts given?"}
+    B -->|No| C["Ask: photos, PDFs, or folder path"] --> D
+    B -->|Yes| D["receipt-reader: extract date, vendor,<br/>description, category, price, currency"]
+    D --> E["Self-check flags<br/>advisory only, never 'approved'"]
+    E --> F["submission.csv"] --> G["Google Sheet:<br/>Expense Submission"]
+  end
+  subgraph FIN["FINANCE"]
+    H["/expense-review"] --> I{"Policy configured?"}
+    I -->|No| J["/setup-expense-policy<br/>attach PDF or write rules"] --> I
+    I -->|Yes| K["Load ~/.expense-claim-review/policy.md"]
+    K --> L["Re-read original receipts<br/>verify, do not trust submission"]
+    L --> M["policy-checker:<br/>one verdict per line + clause"]
+    M --> N["claim-writer"]
+    N --> O["EXPENSE_CLAIM_REVIEW.md"]
+    N --> P["claims.csv (approved only)"]
+    N --> Q["exceptions-queue.csv"]
+    P --> R["Google Sheet:<br/>Expense Review"]
+    S["Hooks: block VIOLATION into claims.csv<br/>log every write to audit-log.txt"] -.-> N
+  end
+  G -.->|"handoff: submission Sheet"| H
+  R -.->|"outcome"| G

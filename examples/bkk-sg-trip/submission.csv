@@ -1,0 +1,6 @@
+date,vendor,description,category,price,currency,receipt_file,self_flag
+2026-08-10,Tian Tian Chicken Rice,"Lunch — chicken rice set",meal,180,THB,receipt-01-lunch.txt,
+2026-08-11,Jumbo Seafood,"Dinner — chilli crab, rice & sides",meal,1020,THB,receipt-02-dinner.txt,LIKELY-OVER-CAP
+2026-08-11,Jumbo Seafood,"Tiger beer x2",meal,260,THB,receipt-02-dinner.txt,LIKELY-NON-REIMBURSABLE
+2026-08-12,Singapore Airlines,"Rebooking fee — return flight moved one day later",flight,4500,THB,receipt-03-flight-change.txt,LIKELY-NEEDS-APPROVAL
+2026-08-10,Grab,"Airport transfer",transport,220,THB,receipt-04-grab.txt,
