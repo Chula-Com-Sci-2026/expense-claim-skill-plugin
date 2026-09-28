@@ -1,0 +1,6 @@
+Vendor: Vietnam Airlines
+Date: 2026-09-09
+Category: Flight
+Items:
+  Business class upgrade, HAN-BKK ... THB 7,800
+Total: THB 7,800

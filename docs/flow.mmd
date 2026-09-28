@@ -1,24 +1,73 @@
-%% Paste into Excalidraw: hamburger menu > Mermaid to Excalidraw
+%% Two views of the same pipeline. Mermaid renders natively on GitHub and in most
+%% slide tools; paste into Excalidraw via: hamburger menu > Mermaid to Excalidraw.
+%%
+%% This file is the ONLY diagram source. A generated .excalidraw and its generator
+%% used to sit beside it; all three drifted out of sync with the code, so the copies
+%% were removed rather than maintained.
+
+%% ---------------------------------------------------------------------------
+%% 1. The simple view — what a non-technical reader needs
+%% ---------------------------------------------------------------------------
+flowchart LR
+  R["Receipts<br/>photos, PDFs, text"] --> S["Employee<br/>prepares submission"]
+  S --> H["submission.csv<br/>+ Google Sheet"]
+  H --> F["Finance<br/>reviews against policy"]
+  P["Company policy<br/>stored once"] --> F
+  L["claims.csv<br/>what was paid before"] --> F
+  F --> OK["Approved lines<br/>-> claims.csv"]
+  F --> EX["Exceptions<br/>-> a human decides"]
+  F --> RP["Audit report<br/>a clause per decision"]
+
+%% ---------------------------------------------------------------------------
+%% 2. The detailed view — the two-lane pipeline
+%% ---------------------------------------------------------------------------
 flowchart TB
-  subgraph EMP["EMPLOYEE"]
-    A["/expense-submit"] --> B{"Receipts given?"}
+  subgraph EMP["EMPLOYEE — advisory only, never approves"]
+    A["/expense-claim-review:expense-submit"] --> B{"Receipts given?"}
     B -->|No| C["Ask: photos, PDFs, or folder path"] --> D
-    B -->|Yes| D["receipt-reader: extract date, vendor,<br/>description, category, price, currency"]
-    D --> E["Self-check flags<br/>advisory only, never 'approved'"]
+    B -->|Yes| D["Extract per line: date, vendor,<br/>description, category, price, currency"]
+    D --> E["Self-check flags<br/>LIKELY-* only, never a claimable amount"]
     E --> F["submission.csv"] --> G["Google Sheet:<br/>Expense Submission"]
   end
-  subgraph FIN["FINANCE"]
-    H["/expense-review"] --> I{"Policy configured?"}
-    I -->|No| J["/setup-expense-policy<br/>attach PDF or write rules"] --> I
-    I -->|Yes| K["Load ~/.expense-claim-review/policy.md"]
-    K --> L["Re-read original receipts<br/>verify, do not trust submission"]
-    L --> M["policy-checker:<br/>one verdict per line + clause"]
-    M --> N["claim-writer"]
+
+  subgraph FIN["FINANCE — the only side that may approve"]
+    H["/expense-claim-review:expense-review"] --> I{"Policy configured?"}
+    I -->|No| J["/expense-claim-review:setup-expense-policy<br/>attach the document or write the rules"] --> I
+    I -->|Yes| K["Load ~/.expense-claim-review/policy.md<br/>+ meta.json UNSPECIFIED list"]
+    K --> L["Re-read the original receipts<br/>verify; do not trust the submission"]
+    L --> M["One verdict per line, with its clause<br/>WITHIN-POLICY / OVER-CAP / NON-REIMBURSABLE /<br/>NEEDS-APPROVAL / DUPLICATE / OUT-OF-WINDOW /<br/>MISSING-DATA / MANIFEST-MISMATCH / UNSPECIFIED"]
+    M --> N["Write the outputs"]
     N --> O["EXPENSE_CLAIM_REVIEW.md"]
     N --> P["claims.csv (approved only)"]
     N --> Q["exceptions-queue.csv"]
     P --> R["Google Sheet:<br/>Expense Review"]
-    S["Hooks: block VIOLATION into claims.csv<br/>log every write to audit-log.txt"] -.-> N
+    LED[("claims.csv<br/>prior claims")] -.->|"duplicate key:<br/>vendor + date + amount"| M
   end
+
   G -.->|"handoff: submission Sheet"| H
   R -.->|"outcome"| G
+
+  subgraph HK["HOOKS — deterministic, outside the model's control"]
+    S1["PreToolUse Write|Edit:<br/>block VIOLATION into claims.csv (exit 2)"]
+    S2["PostToolUse Write|Edit:<br/>append to audit-log.txt"]
+    S3["PreToolUse Agent:<br/>append to agent-invocations.log"]
+  end
+  S1 -.-> N
+  S2 -.-> N
+
+%% ---------------------------------------------------------------------------
+%% 3. Agents — defined, but NOT on the measured path
+%% ---------------------------------------------------------------------------
+%% The plugin declares four agents. The benchmark in bench/ recorded ZERO Agent
+%% invocations across every run, including setup: the skills executed their steps
+%% inline instead of delegating. The negative is evidenced, not assumed — the
+%% PostToolUse hook wrote audit-log.txt in those same runs, so hooks were live and
+%% an Agent call would have been logged by S3 above.
+%%
+%% Draw this lane dashed, or leave it off a slide that also shows the benchmark
+%% result, or the diagram will contradict the measurement.
+flowchart LR
+  SK["Skill step"] -. "available, not observed" .-> AG1["receipt-reader"]
+  SK -. "available, not observed" .-> AG2["policy-checker"]
+  SK -. "available, not observed" .-> AG3["claim-writer"]
+  SET["setup-expense-policy"] -. "available, not observed" .-> AG4["policy-normalizer"]

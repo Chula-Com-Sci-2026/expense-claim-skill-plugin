@@ -1,0 +1,6 @@
+Vendor: Blue Bird Taxi
+Date: 2026-09-21
+Category: Transport
+Items:
+  CGK to Menteng .................... THB 390
+Total: THB 390

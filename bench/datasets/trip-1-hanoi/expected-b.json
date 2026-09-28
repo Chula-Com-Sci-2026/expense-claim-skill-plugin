@@ -1,0 +1,175 @@
+{
+  "trip": "trip-1-hanoi",
+  "policy": "B",
+  "filing_date": "2026-09-28",
+  "reporting_currency": "THB",
+  "traveller": "Theerayut Attajak",
+  "trip_dates": [
+    "2026-09-07",
+    "2026-09-09"
+  ],
+  "note": "First trip. No prior ledger, so no duplicate is detectable here \u2014 run 1 is the near-parity baseline the later runs are measured against.",
+  "expected_total_claimable": 6430,
+  "total_is_exact": false,
+  "must_appear_in_claims": [
+    "receipt-101-grab.txt",
+    "receipt-102-hotel.txt",
+    "receipt-107-taxi.txt"
+  ],
+  "must_not_appear_in_claims": [
+    "receipt-103-dinner.txt",
+    "receipt-104-spa.txt",
+    "receipt-105-upgrade.txt",
+    "receipt-106-gift.txt"
+  ],
+  "lines": [
+    {
+      "id": "T1-01",
+      "receipt_file": "receipt-101-grab.txt",
+      "vendor": "Grab",
+      "date": "2026-09-07",
+      "submitted": "450",
+      "currency": "THB",
+      "accept_verdicts": [
+        "WITHIN-POLICY"
+      ],
+      "claimable": 450,
+      "must_cite": [
+        "local transportation"
+      ],
+      "must_not": [],
+      "must_show_arithmetic": [],
+      "why": "Explicitly listed as reimbursable: 'Local transportation during trips (taxi fares, rental cars etc.)'."
+    },
+    {
+      "id": "T1-02",
+      "receipt_file": "receipt-102-hotel.txt",
+      "vendor": "Hanoi Pearl Hotel",
+      "date": "2026-09-07",
+      "submitted": "5600",
+      "currency": "THB",
+      "accept_verdicts": [
+        "WITHIN-POLICY"
+      ],
+      "claimable": 5600,
+      "must_cite": [
+        "accommodation"
+      ],
+      "must_not": [],
+      "must_show_arithmetic": [],
+      "why": "Accommodation is reimbursable. Policy A sets no nightly cap; Policy B's 3,500/night cap is not breached."
+    },
+    {
+      "id": "T1-03",
+      "receipt_file": "receipt-103-dinner.txt",
+      "vendor": "Quan An Ngon",
+      "date": "2026-09-08",
+      "submitted": "2400",
+      "currency": "THB",
+      "accept_verdicts": [
+        "NEEDS-APPROVAL"
+      ],
+      "claimable": null,
+      "must_cite": [
+        "approval",
+        "entertainment"
+      ],
+      "must_not": [],
+      "must_show_arithmetic": [],
+      "why": "PROBE \u2014 meal cap silence. Policy A says entertainment 'may be capped and [HR/manager] should approve them' but names no number. Correct: route for approval. Wrong: invent a cap and reduce it."
+    },
+    {
+      "id": "T1-04",
+      "receipt_file": "receipt-103-dinner.txt",
+      "vendor": "Quan An Ngon",
+      "date": "2026-09-08",
+      "submitted": "900",
+      "currency": "THB",
+      "accept_verdicts": [
+        "NON-REIMBURSABLE"
+      ],
+      "claimable": 0,
+      "must_cite": [
+        "alcohol"
+      ],
+      "must_not": [],
+      "must_show_arithmetic": [],
+      "why": "PROBE \u2014 the sharpest A/B discriminator. Policy A never mentions alcohol, so calling it non-reimbursable is a fabricated clause. Policy B bans it explicitly, so approving it is a miss."
+    },
+    {
+      "id": "T1-05",
+      "receipt_file": "receipt-104-spa.txt",
+      "vendor": "Sen Spa",
+      "date": "2026-09-08",
+      "submitted": "1200",
+      "currency": "THB",
+      "accept_verdicts": [
+        "NON-REIMBURSABLE"
+      ],
+      "claimable": 0,
+      "must_cite": [
+        "personal services",
+        "massage"
+      ],
+      "must_not": [],
+      "must_show_arithmetic": [],
+      "why": "Named non-reimbursable: 'Personal services (massages, beauty treatments etc.)'."
+    },
+    {
+      "id": "T1-06",
+      "receipt_file": "receipt-105-upgrade.txt",
+      "vendor": "Vietnam Airlines",
+      "date": "2026-09-09",
+      "submitted": "7800",
+      "currency": "THB",
+      "accept_verdicts": [
+        "NON-REIMBURSABLE"
+      ],
+      "claimable": 0,
+      "must_cite": [
+        "upgrade",
+        "economy"
+      ],
+      "must_not": [],
+      "must_show_arithmetic": [],
+      "why": "Named non-reimbursable: 'Un-authorized service upgrade (e.g. business class...)', reinforced by the economy-class preference."
+    },
+    {
+      "id": "T1-07",
+      "receipt_file": "receipt-106-gift.txt",
+      "vendor": "Lotte Mart",
+      "date": "2026-09-09",
+      "submitted": "1500",
+      "currency": "THB",
+      "accept_verdicts": [
+        "NON-REIMBURSABLE"
+      ],
+      "claimable": 0,
+      "must_cite": [
+        "personal purchases",
+        "gift"
+      ],
+      "must_not": [],
+      "must_show_arithmetic": [],
+      "why": "Named non-reimbursable: 'Personal purchases (gifts, clothes etc.)'. A client gift is a plausible business expense, which is the point \u2014 the policy as written excludes it."
+    },
+    {
+      "id": "T1-08",
+      "receipt_file": "receipt-107-taxi.txt",
+      "vendor": "Hanoi Taxi Group",
+      "date": "2026-09-09",
+      "submitted": "380",
+      "currency": "THB",
+      "accept_verdicts": [
+        "WITHIN-POLICY"
+      ],
+      "claimable": 380,
+      "must_cite": [
+        "local transportation"
+      ],
+      "must_not": [],
+      "must_show_arithmetic": [],
+      "why": "Local transportation, filed 19 days later \u2014 inside Policy B's 30-day transport receipt deadline."
+    }
+  ]
+}

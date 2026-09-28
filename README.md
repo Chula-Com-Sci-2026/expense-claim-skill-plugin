@@ -35,7 +35,7 @@ claude plugin validate ./expense-claim-review   # schema check before you push
 ### 0. Once — set up the policy
 
 ```bash
-/setup-expense-policy ./company-policy.pdf
+/expense-claim-review:setup-expense-policy ./company-policy.pdf
 ```
 
 Attach a PDF, DOCX, or photo of the policy, or just write the rules out. It is
@@ -46,7 +46,7 @@ active, amend a rule, or replace an expired policy — old versions are kept.
 ### 1. Employee — submit
 
 ```bash
-/expense-submit ./my-trip
+/expense-claim-review:expense-submit ./my-trip
 ```
 
 Or run it bare and attach receipt photos when asked. Reads images, PDFs, or text
@@ -60,7 +60,7 @@ The decision stays with finance.
 ### 2. Finance — review
 
 ```bash
-/expense-review ./my-trip
+/expense-claim-review:expense-review ./my-trip
 ```
 
 Accepts the submission Sheet URL, a `submission.csv`, or a bare trip folder. It
@@ -73,7 +73,8 @@ stored policy line by line, and writes:
 - a **review Google Sheet** to share back with the employee
 
 Both skills also fire from plain English — "help me file these receipts", "check
-this claim against our policy" — without typing a command.
+this claim against our policy" — which is the usual path; the slash form above is
+just the explicit one.
 
 ## What's inside
 
@@ -82,11 +83,7 @@ expense-claim-review/
 ├── .claude-plugin/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # makes the repo installable from GitHub
-├── commands/
-│   ├── setup-expense-policy.md
-│   ├── expense-submit.md    # employee entry point
-│   └── expense-review.md    # finance entry point
-├── skills/
+├── skills/                  # the entry points — no commands/ wrapper layer
 │   ├── setup-expense-policy/SKILL.md
 │   ├── expense-submit/SKILL.md
 │   └── expense-review/SKILL.md
@@ -96,16 +93,18 @@ expense-claim-review/
 │   ├── policy-checker.md    # finance side
 │   └── claim-writer.md      # finance side
 ├── hooks/
-│   ├── hooks.json           # PreToolUse (block) + PostToolUse (log)
+│   ├── hooks.json           # PreToolUse (block + agent log) + PostToolUse (log)
 │   └── scripts/
 │       ├── block-out-of-policy.sh
-│       └── log-decision.sh
+│       ├── log-decision.sh
+│       └── log-agent-call.sh
 ├── tests/
 │   ├── hooks.sh             # automated — the hook scripts
 │   └── golden-path.sh       # grades the artifacts a review leaves behind
+├── bench/                   # baseline-vs-plugin benchmark + REPORT.html
 ├── docs/
 │   ├── TEST-CASES.md        # the full test matrix
-│   └── flow.excalidraw      # two-lane flow diagram
+│   └── flow.mmd             # the flow diagrams (Mermaid, single source)
 └── examples/
     ├── bkk-sg-trip/         # synthetic test data (4 receipts + a submission)
     └── edge-cases/          # fixtures kept out of the golden path
@@ -221,15 +220,26 @@ adversary — which is exactly why the adversarial cases above are part of the s
 
 ## Prove it works (baseline vs plugin)
 
-Run the same 4 receipts twice and compare:
+`bench/` runs that comparison for real and scores it — three sequential submissions,
+three runs per arm, every run in a fresh session:
 
-1. **Baseline** — a plain prompt ("review these expenses") with no plugin.
-2. **Plugin** — `/expense-submit` then `/expense-review`.
+```bash
+bash bench/run.sh                  # baseline arms first, then the plugin
+python3 bench/measure.py           # tokens, cost, time, subagent calls
+python3 bench/score.py             # per-line accuracy against ground truth
+python3 bench/report.py            # -> bench/REPORT.html
+```
 
-Compare on: policy violations caught, missing-approval detection, duplicate
-prevention, tampering detection, and whether each decision cites a policy clause.
-The duplicate and the tampered amount are where the gap usually shows — neither is
-detectable without the `claims.csv` ledger and the re-read step.
+It measures token usage (including subagent transcripts, which live in separate
+files), wall time, whether agents were actually invoked, and per-line verdict
+accuracy against a ground truth that ships with the datasets.
+
+The probes are chosen around what the sample policy does *not* say — it is a
+template with no numbers in it at all — so the headline question is whether a
+reviewer invents a cap that does not exist. The duplicate and the tampered amount
+are the other discriminators: neither is detectable without the `claims.csv` ledger
+and the re-read step, and both are placed in runs 2 and 3 so the gap opens as the
+ledger fills. See `bench/README.md`.
 
 ## License
 

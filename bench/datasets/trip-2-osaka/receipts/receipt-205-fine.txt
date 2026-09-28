@@ -1,0 +1,6 @@
+Vendor: Osaka City Parking
+Date: 2026-09-16
+Category: Transport
+Items:
+  Parking violation penalty, rental vehicle .. THB 1,800
+Total: THB 1,800

@@ -1,0 +1,6 @@
+Vendor: Hanoi Taxi Group
+Date: 2026-09-09
+Category: Transport
+Items:
+  Old Quarter to Noi Bai airport .... THB 380
+Total: THB 380

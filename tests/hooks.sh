@@ -5,6 +5,7 @@ set -u
 cd "$(dirname "$0")/.."
 BLOCK=hooks/scripts/block-out-of-policy.sh
 LOG=hooks/scripts/log-decision.sh
+AGENT=hooks/scripts/log-agent-call.sh
 pass=0; fail=0
 
 check() { # check <id> <expected-exit> <actual-exit> <description>
@@ -40,6 +41,19 @@ case "$line" in
   *"	Write	/t/claims.csv") check HOOK-07 0 0 "audit line is written tab-separated" ;;
   *) check HOOK-07 0 1 "audit line is written tab-separated (got: ${line:-<empty>})" ;;
 esac
+rm -rf "$tmp"
+
+echo "log-agent-call.sh"
+tmp="$(mktemp -d)"
+printf '%s' '{"tool_name":"Agent","tool_input":{"subagent_type":"policy-checker","description":"Check lines","prompt":"Apply the stored policy."}}' \
+  | CLAUDE_PROJECT_DIR="$tmp" bash "$AGENT" >/dev/null 2>&1
+line="$(cat "$tmp/agent-invocations.log" 2>/dev/null)"
+case "$line" in
+  *"	policy-checker	Check lines	Apply the stored policy.") check HOOK-08 0 0 "subagent_type and instruction head are recorded" ;;
+  *) check HOOK-08 0 1 "subagent_type and instruction head are recorded (got: ${line:-<empty>})" ;;
+esac
+printf 'not json' | CLAUDE_PROJECT_DIR="$tmp" bash "$AGENT" >/dev/null 2>&1
+check HOOK-09 0 $? "malformed Agent payload does not wedge the session"
 rm -rf "$tmp"
 
 echo

@@ -9,6 +9,15 @@
             "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/scripts/block-out-of-policy.sh"
           }
         ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/scripts/log-agent-call.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [

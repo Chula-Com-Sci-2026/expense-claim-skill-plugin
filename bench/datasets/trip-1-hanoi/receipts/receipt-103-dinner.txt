@@ -1,0 +1,7 @@
+Vendor: Quan An Ngon
+Date: 2026-09-08
+Category: Meal
+Items:
+  Set menu x3 ....................... THB 2,400
+  Red wine, 1 bottle ................ THB 900
+Total: THB 3,300

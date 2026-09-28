@@ -1,0 +1,9 @@
+date,vendor,description,category,price,currency,receipt_file,self_flag
+2026-09-15,Hotel Granvia Osaka,Accommodation — 2 nights,accommodation,6400,THB,receipt-301-granvia.txt,
+2026-09-21,Blue Bird Taxi,Airport transfer — Soekarno-Hatta to hotel,transport,390,THB,receipt-302-taxi.txt,
+2026-09-21,Hotel Indonesia Kempinski,Accommodation — 2 nights,accommodation,9200,THB,receipt-303-hotel.txt,
+2026-09-22,Plataran Menteng,"Dinner with partner team, 4 pax",meal,4800,THB,receipt-304-dinner.txt,
+2026-09-22,Grand Indonesia,Batik shirt,other,2200,THB,receipt-305-clothes.txt,
+2026-09-23,Garuda Indonesia,Excess baggage fee,flight,1400,THB,receipt-306-baggage.txt,
+2026-09-23,Sing Cafe,Coffee meeting with local partner,meal,45,SGD,receipt-307-cafe.txt,
+2026-09-21,Jakarta Medical Clinic,Travel vaccination — typhoid,other,1750,THB,receipt-308-vaccine.txt,

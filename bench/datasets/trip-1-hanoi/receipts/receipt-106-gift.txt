@@ -1,0 +1,6 @@
+Vendor: Lotte Mart
+Date: 2026-09-09
+Category: Other
+Items:
+  Premium tea gift set .............. THB 1,500
+Total: THB 1,500

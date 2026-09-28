@@ -1,0 +1,9 @@
+date,vendor,description,category,price,currency,receipt_file,self_flag
+2026-09-07,Grab,Airport transfer — Noi Bai to hotel,transport,450,THB,receipt-201-grab.txt,
+2026-09-14,Kansai Airport Limousine,Airport bus to Umeda,transport,620,THB,receipt-202-bus.txt,
+2026-09-15,Hotel Granvia Osaka,Accommodation — 2 nights,accommodation,8400,THB,receipt-203-hotel.txt,
+2026-09-15,Ichiran Ramen,"Lunch, 1 pax",meal,520,THB,receipt-204-lunch.txt,
+2026-09-16,Osaka City Parking,Parking fine — rental car,transport,1800,THB,receipt-205-fine.txt,
+2026-04-18,Bangkok Airways,Return flight — Chiang Mai project visit,flight,3200,THB,receipt-206-flight.txt,
+2026-09-16,Kuromon Market,Lunch — 2 sets (self and spouse),meal,1100,THB,receipt-207-kuromon.txt,
+2026-09-16,FamilyMart,Convenience store — total illegible,other,,THB,receipt-208-familymart.txt,
