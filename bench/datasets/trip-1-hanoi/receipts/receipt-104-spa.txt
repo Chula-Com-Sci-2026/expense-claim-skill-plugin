@@ -1,6 +1,0 @@
-Vendor: Sen Spa
-Date: 2026-09-08
-Category: Other
-Items:
-  Traditional massage, 60 min ....... THB 1,200
-Total: THB 1,200

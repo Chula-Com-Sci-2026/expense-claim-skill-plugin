@@ -101,7 +101,6 @@ expense-claim-review/
 ├── tests/
 │   ├── hooks.sh             # automated — the hook scripts
 │   └── golden-path.sh       # grades the artifacts a review leaves behind
-├── bench/                   # baseline-vs-plugin benchmark + REPORT.html
 ├── docs/
 │   ├── TEST-CASES.md        # the full test matrix
 │   └── flow.mmd             # the flow diagrams (Mermaid, single source)
@@ -220,26 +219,28 @@ adversary — which is exactly why the adversarial cases above are part of the s
 
 ## Prove it works (baseline vs plugin)
 
-`bench/` runs that comparison for real and scores it — three sequential submissions,
-three runs per arm, every run in a fresh session:
+Run the same receipts twice and compare:
 
-```bash
-bash bench/run.sh                  # baseline arms first, then the plugin
-python3 bench/measure.py           # tokens, cost, time, subagent calls
-python3 bench/score.py             # per-line accuracy against ground truth
-python3 bench/report.py            # -> bench/REPORT.html
-```
+1. **Baseline** — a plain prompt ("review these expenses") with no plugin.
+2. **Plugin** — `/expense-claim-review:expense-review`.
 
-It measures token usage (including subagent transcripts, which live in separate
-files), wall time, whether agents were actually invoked, and per-line verdict
-accuracy against a ground truth that ships with the datasets.
+Compare on: policy violations caught, missing-approval detection, duplicate
+prevention, tampering detection, and whether each decision cites a policy clause.
+The duplicate and the tampered amount are where the gap usually shows — neither is
+detectable without the `claims.csv` ledger and the re-read step.
 
-The probes are chosen around what the sample policy does *not* say — it is a
-template with no numbers in it at all — so the headline question is whether a
-reviewer invents a cap that does not exist. The duplicate and the tampered amount
-are the other discriminators: neither is detectable without the `claims.csv` ledger
-and the re-read step, and both are placed in runs 2 and 3 so the gap opens as the
-ledger fills. See `bench/README.md`.
+A one-off instrumented version of this was run in September 2026 and its results are
+kept at [`docs/benchmark-report.html`](docs/benchmark-report.html) — token usage,
+cost, wall time, subagent invocation and per-line accuracy across three arms. Two
+findings are worth carrying forward:
+
+- **No subagent was ever invoked**, in any run, including policy setup. The plugin
+  declares four agents and the skills ran every step inline.
+- **Run-to-run variance is large.** Four repetitions of one submission, byte-identical
+  input each time, approved totals ranging from THB 620 to 8,090 — a thirteenfold
+  spread. Any single-run comparison of this pipeline, in either direction, is noise.
+
+The harness itself has been removed; the report is kept as a record.
 
 ## License
 

@@ -4,11 +4,6 @@ agent-invocations.log
 EXPENSE_CLAIM_REVIEW.md
 exceptions-queue.csv
 
-# benchmark run artifacts — transcripts, workdirs and per-run json.
-# bench/REPORT.html is the committed deliverable and is NOT ignored.
-bench/results/
-bench/*-run.log
-
 # python
 __pycache__/
 *.pyc

@@ -1,6 +1,0 @@
-Vendor: Kansai Airport Limousine
-Date: 2026-09-14
-Category: Transport
-Items:
-  Limousine bus, KIX to Umeda ....... THB 620
-Total: THB 620

@@ -193,18 +193,24 @@ bash tests/hooks.sh      # 9 checks
 → `/expense-claim-review:expense-review` in sequence, each with no arguments, answering the prompts.
 Pass: all three ask for what they need, and the chain ends at THB 980.
 
-`E2E-02` — **baseline vs plugin.** Automated in `bench/`, not scored by hand:
+`E2E-02` — **baseline vs plugin.** Give the same four receipts to a plain session
+with no plugin ("review these expenses"), then run the plugin, and score both:
 
-```bash
-bash bench/run.sh && python3 bench/measure.py && python3 bench/score.py \
-  && python3 bench/report.py        # -> bench/REPORT.html
-```
+| Criterion | Baseline | Plugin |
+| --- | --- | --- |
+| Dinner cap applied (800, not 1280) | | |
+| Alcohol excluded | | |
+| Flight fee routed to approval, not approved | | |
+| Grab duplicate caught | | |
+| Tampered amount caught | | |
+| Every decision cites a clause | | |
+| Total = 980 | | |
 
-Three sequential submissions, three runs per arm, each in a fresh session with no
-shared context. Scores per-line verdict accuracy, format conformance, token usage
-(subagent transcripts included), cost, wall time and whether agents were really
-invoked. `bench/README.md` documents the arms, the controls and the probes.
+The duplicate and the tamper rows are where the gap usually shows: neither is
+detectable without the `claims.csv` ledger and the re-read step.
 
-The duplicate and the tamper rows are where the gap opens: neither is detectable
-without the `claims.csv` ledger and the re-read step, so both sit in runs 2 and 3
-rather than run 1.
+**Read one run with suspicion.** An instrumented version of this comparison
+(`docs/benchmark-report.html`, September 2026) repeated a single submission four
+times under byte-identical conditions and saw approved totals from THB 620 to 8,090.
+A one-off pass of this table tells you very little; treat a difference as real only
+if it survives repetition.

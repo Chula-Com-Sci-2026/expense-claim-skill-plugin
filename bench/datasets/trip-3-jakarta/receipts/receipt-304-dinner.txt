@@ -1,6 +1,0 @@
-Vendor: Plataran Menteng
-Date: 2026-09-22
-Category: Meal
-Items:
-  Set dinner x4 ..................... THB 4,800
-Total: THB 4,800

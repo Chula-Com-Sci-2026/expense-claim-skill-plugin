@@ -1,9 +1,0 @@
-date,vendor,description,category,price,currency,receipt_file,self_flag
-2026-09-07,Grab,Airport transfer — Noi Bai to hotel,transport,450,THB,receipt-101-grab.txt,
-2026-09-07,Hanoi Pearl Hotel,"Accommodation — 2 nights, standard room",accommodation,5600,THB,receipt-102-hotel.txt,
-2026-09-08,Quan An Ngon,Client dinner — set menu x3,meal,2400,THB,receipt-103-dinner.txt,
-2026-09-08,Quan An Ngon,"Red wine, 1 bottle",meal,900,THB,receipt-103-dinner.txt,
-2026-09-08,Sen Spa,60-minute massage,other,1200,THB,receipt-104-spa.txt,
-2026-09-09,Vietnam Airlines,Seat upgrade to business class,flight,7800,THB,receipt-105-upgrade.txt,
-2026-09-09,Lotte Mart,Gift set for client,other,1500,THB,receipt-106-gift.txt,
-2026-09-09,Hanoi Taxi Group,Hotel to Noi Bai airport,transport,380,THB,receipt-107-taxi.txt,

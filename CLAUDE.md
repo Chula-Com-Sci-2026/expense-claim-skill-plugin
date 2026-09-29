@@ -24,8 +24,6 @@ claude plugin list                  # confirm it loaded
 bash tests/hooks.sh                 # automated: hook scripts (9 checks)
 bash tests/golden-path.sh           # grades the artifacts of a review run (14 checks)
 bash tests/golden-path.sh --reset   # restore claims.csv, clear outputs, before re-running
-python3 bench/datasets.gen.py       # regenerate the benchmark fixtures + ground truth
-bash bench/run.sh --dry-run         # benchmark: print every command, spend nothing
 
 # inside a session started with --plugin-dir . (or an installed plugin)
 /expense-claim-review:setup-expense-policy examples/bkk-sg-trip/expense-policy.md   # once
@@ -95,10 +93,11 @@ it; all three drifted apart, so the copies were deleted rather than maintained. 
 the Mermaid into Excalidraw (hamburger menu > Mermaid to Excalidraw) if you need an
 editable picture.
 
-Keep the diagram honest about agents: the plugin declares four, and `bench/` measured
-**zero** invocations of any of them. The agent lane is drawn dashed and labelled
-"available, not observed" for that reason — do not redraw it as a live pipeline
-without a measurement that says otherwise.
+Keep the diagram honest about agents: the plugin declares four, and a September 2026
+benchmark measured **zero** invocations of any of them across sixteen runs. The agent
+lane is drawn dashed and labelled "available, not observed" for that reason — do not
+redraw it as a live pipeline without a measurement that says otherwise. The evidence
+is `docs/benchmark-report.html`.
 
 The marketplace is named `expense-tools`, not the plugin name, so the install id is
 `expense-claim-review@expense-tools`.
@@ -142,28 +141,6 @@ operation** — `update_file` changes metadata (title, parent) only. That is why
 creates a *separate* review Sheet instead of writing decisions back into the employee's
 submission Sheet. Drive being unavailable must degrade gracefully: the local files are
 the source of truth, the Sheet is a convenience.
-
-## Benchmark
-
-`bench/` is the instrumented version of `E2E-02`: the same submissions reviewed with
-and without the plugin, scored on accuracy, tokens, cost, time and subagent calls.
-`bench/README.md` has the full design. Three things to know before touching it:
-
-- `bench/datasets.gen.py` is the single source of both the fixtures and the ground
-  truth, so an amount cannot drift from what it is scored against. Edit the
-  generator, never `bench/datasets/`.
-- **Receipt filenames name the merchant only.** An early run had a baseline catch the
-  duplicate purely from the string `resubmit` in a filename — the fixture was
-  answering its own question.
-- Token accounting has three traps, all of which fail silently: usage rows repeat per
-  content block (dedupe by `message.id`, keep the highest `apiBlockIndex`), subagent
-  tokens live in separate `<session-id>/subagents/*.jsonl` files, and the tool is
-  called `Agent`. `bench/measure.py` handles all three; anything reimplementing it
-  must too.
-
-The sample policy the benchmark uses (`bench/policies/policy-a.docx`, the Workable
-template) contains **no digits at all**, which is the point — it tests whether a
-reviewer invents the caps it does not have.
 
 ## Example data
 

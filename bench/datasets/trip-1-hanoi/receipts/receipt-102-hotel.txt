@@ -1,6 +1,0 @@
-Vendor: Hanoi Pearl Hotel
-Date: 2026-09-07
-Category: Accommodation
-Items:
-  Standard room, 2 nights @ 2,800 ... THB 5,600
-Total: THB 5,600

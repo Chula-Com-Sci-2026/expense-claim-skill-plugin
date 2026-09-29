@@ -1,6 +1,0 @@
-Vendor: Hotel Granvia Osaka
-Date: 2026-09-15
-Category: Accommodation
-Items:
-  Standard room, 2 nights @ 3,200 ... THB 6,400
-Total: THB 6,400
