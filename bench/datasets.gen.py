@@ -500,8 +500,28 @@ def build_expected(trip, policy):
     }
 
 
+def seed_ledger(upto_index):
+    """The prior-claims ledger a trip should start from.
+
+    For the repeat mode every repetition of a trip must begin from an IDENTICAL
+    ledger, otherwise repetition measures drift in the ledger rather than variance
+    in the reviewer. So the seed is computed from the ground truth — the rows the
+    earlier trips are supposed to have approved — not from whatever an earlier run
+    happened to produce.
+    """
+    out = ["date,vendor,category,claimable_amount,receipt_file,review_date"]
+    for trip in TRIPS[:upto_index]:
+        for ln in trip["lines"]:
+            amt = ln["a"]["claimable"]
+            if not amt:
+                continue
+            out.append(f'{ln["date"]},{ln["vendor"]},{ln["category"]},'
+                       f'{amt:g},{ln["receipt"]},{FILING_DATE}')
+    return "\n".join(out) + "\n"
+
+
 def main():
-    for trip in TRIPS:
+    for idx, trip in enumerate(TRIPS):
         d = os.path.join(OUT, trip["slug"])
         os.makedirs(os.path.join(d, "receipts"), exist_ok=True)
 
@@ -533,6 +553,9 @@ def main():
                 w.writerow([ln["date"], ln["vendor"], ln["description"],
                             ln["category"], ln["price"],
                             ln.get("currency", CURRENCY), ln["receipt"], ""])
+
+        with open(os.path.join(d, "seed-claims.csv"), "w") as f:
+            f.write(seed_ledger(idx))
 
         for policy in ("a", "b"):
             with open(os.path.join(d, f"expected-{policy}.json"), "w") as f:

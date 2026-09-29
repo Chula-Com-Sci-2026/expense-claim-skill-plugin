@@ -42,6 +42,10 @@ POLICY="a"
 RUNS=3
 ARMS="base-strict base-fair skill"
 DRY=0
+REPEAT_TRIP=""      # --repeat <slug>: run the SAME trip every time instead of the
+                    # sequence, seeding an identical ledger each repetition. The
+                    # sequence mode gives one observation per cell and therefore no
+                    # spread at all; this is what produces a mean and a range.
 STAMP="$(date +%Y%m%d-%H%M%S)"
 
 while [ $# -gt 0 ]; do
@@ -51,6 +55,7 @@ while [ $# -gt 0 ]; do
     --policy)  POLICY="$2"; shift 2 ;;
     --model)   MODEL="$2"; shift 2 ;;
     --effort)  EFFORT="$2"; shift 2 ;;
+    --repeat)  REPEAT_TRIP="$2"; shift 2 ;;
     --dry-run) DRY=1; shift ;;
     --stamp)   STAMP="$2"; shift 2 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
@@ -166,26 +171,33 @@ for arm in $ARMS; do
 
   prev_claims=""
   for i in $(seq 1 "$RUNS"); do
-    trip="${TRIPS[$((i-1))]}"
+    if [ -n "$REPEAT_TRIP" ]; then trip="$REPEAT_TRIP"; else trip="${TRIPS[$((i-1))]}"; fi
     rd="$OUTROOT/$arm/run$i"
     wd="$WORKROOT/$arm/run$i"
     mkdir -p "$wd" "$rd"
     cp -R "$BENCH/datasets/$trip/." "$wd/"
-    rm -f "$wd/expected-a.json" "$wd/expected-b.json"   # never show the grader's key
+    rm -f "$wd/expected-a.json" "$wd/expected-b.json" "$wd/seed-claims.csv"
 
     # Ledger continuity. The skill arm carries claims.csv forward on disk, which is
     # how run 2 and 3 detect duplicates. base-fair gets the same rows pasted into
     # the prompt instead. base-strict gets nothing — that is the arm's definition.
+    # In repeat mode every repetition starts from the SAME seed ledger, computed
+    # from ground truth. Carrying the previous repetition forward would mean each
+    # run faced a different ledger, and the spread would measure ledger drift
+    # instead of reviewer variance.
+    seed="$BENCH/datasets/$trip/seed-claims.csv"
     ledger_arg=""
     case "$arm" in
       skill)
-        if [ -n "$prev_claims" ] && [ -f "$prev_claims" ]; then
+        if [ -n "$REPEAT_TRIP" ]; then
+          cp "$seed" "$wd/claims.csv"
+        elif [ -n "$prev_claims" ] && [ -f "$prev_claims" ]; then
           cp "$prev_claims" "$wd/claims.csv"
         else
           echo "date,vendor,category,claimable_amount,receipt_file,review_date" > "$wd/claims.csv"
         fi ;;
       base-fair)
-        ledger_arg="${prev_claims:-}" ;;
+        if [ -n "$REPEAT_TRIP" ]; then ledger_arg="$seed"; else ledger_arg="${prev_claims:-}"; fi ;;
     esac
 
     assemble_prompt "$arm" "$wd" "$ledger_arg" > "$rd/prompt.txt"

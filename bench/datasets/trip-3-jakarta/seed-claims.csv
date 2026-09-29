@@ -1,0 +1,7 @@
+date,vendor,category,claimable_amount,receipt_file,review_date
+2026-09-07,Grab,transport,450,receipt-101-grab.txt,2026-09-28
+2026-09-07,Hanoi Pearl Hotel,accommodation,5600,receipt-102-hotel.txt,2026-09-28
+2026-09-09,Hanoi Taxi Group,transport,380,receipt-107-taxi.txt,2026-09-28
+2026-09-14,Kansai Airport Limousine,transport,620,receipt-202-bus.txt,2026-09-28
+2026-09-15,Hotel Granvia Osaka,accommodation,6400,receipt-203-hotel.txt,2026-09-28
+2026-09-16,Kuromon Market,meal,550,receipt-207-kuromon.txt,2026-09-28
