@@ -10,20 +10,43 @@ description: >-
 
 # Set up the expense policy
 
-The policy is configured **once** and reused by every `/expense-review`. It lives
-outside any trip folder so it survives across trips, repos, and travellers.
+The policy is configured **once** and reused by every
+`/expense-claim-review:expense-review`. It lives outside any trip folder so it
+survives across trips, repos, and travellers.
 
 ## Where it lives
 
 ```
 ~/.expense-claim-review/
 ├── policy.md      # the normalized, machine-readable policy
-├── meta.json      # version, effective date, source, captured date
-└── sources/       # the original PDF/DOCX the user supplied, kept verbatim
+├── meta.json      # version, effective date, source, captured date, template version
+├── sources/       # the original PDF/DOCX the user supplied, kept verbatim
+└── templates/     # the file formats — installed from the plugin on first run
 ```
 
 Create the directory if it does not exist. Never store the policy inside a trip
 folder — a trip folder is evidence, not configuration.
+
+## Templates come for free
+
+Read `${CLAUDE_PLUGIN_ROOT}/templates/README.md` and follow its resolution rule.
+**If `~/.expense-claim-review/templates/` does not exist, copy the plugin's
+`templates/` there and record `"template_version": "1.0"` in `meta.json`** — before
+asking the user anything. Then say one line and move on:
+
+> Templates are already set up (v1.0, default). Edit
+> `~/.expense-claim-review/templates/` any time — your copy wins over the plugin's.
+
+There is nothing for the user to decide here, so do not offer a choice. Whenever you
+report the active policy, report the template version alongside it and whether it is
+the default or the user's own override.
+
+## Delegate this step
+
+**Use the Agent tool with `subagent_type: policy-normalizer`** to turn the captured
+source into `policy.md`. Do not normalize it inline. Give the agent the source path
+or the user's own words, and take back the policy body plus the list of
+`UNSPECIFIED` rules. You capture, confirm and write; it normalizes.
 
 ## Procedure
 
@@ -44,7 +67,8 @@ folder — a trip folder is evidence, not configuration.
    If the user runs this with no input at all, ask which of the two they want to do.
    Do not invent a default policy.
 
-4. **Normalize into `policy.md`.** Rewrite the source into the sections below.
+4. **Normalize into `policy.md`** via `policy-normalizer`. The source becomes the
+   sections below.
    Every rule must be checkable by a later review — a number, a category, and a
    consequence. Quote the original clause text alongside each rule so the review
    can cite it.
@@ -70,6 +94,7 @@ folder — a trip folder is evidence, not configuration.
      "currency": "THB",
      "source": "sources/company-expense-policy-2026.pdf",
      "captured_at": "2026-09-17",
+     "template_version": "1.0",
      "unspecified": ["currency.fx_rate_source"]
    }
    ```
@@ -77,8 +102,8 @@ folder — a trip folder is evidence, not configuration.
    On an update, bump `version`, set the previous entry's `effective_until`, and
    keep the old `policy.md` as `policy-v<n>.md`. History is not optional here.
 
-7. **Confirm.** Show the user a short summary of the rules now in force and the
-   path they were written to.
+7. **Confirm.** Show the user a short summary of the rules now in force, the path
+   they were written to, and the active template version.
 
 ## Rules
 

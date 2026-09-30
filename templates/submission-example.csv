@@ -1,0 +1,6 @@
+line,date,vendor,description,category,price,currency,receipt_file,receipt_total,self_flag,employee_note
+1,2026-08-19,Tadich Grill,Client lunch x3 incl. 20% tip,meal,96.60,USD,receipt-01-client-lunch.txt,96.60,,Attendees and purpose are on the receipt
+2,2026-08-19,House of Prime Rib,Group dinner x4,meal,184.00,USD,receipt-02-group-dinner.txt,246.00,,
+3,2026-08-19,House of Prime Rib,Bottle of cabernet,meal,62.00,USD,receipt-02-group-dinner.txt,246.00,LIKELY-NON-REIMBURSABLE,Shared with the partner team
+4,2026-08-18,Zuni Cafe,Dinner x2,meal,68.00,USD,receipt-03-dinner-spouse.txt,68.00,,
+5,2026-08-20,Hotel Zephyr,Hotel 2 nights incl. tax,accommodation,578.20,USD,receipt-04-hotel.txt,578.20,,

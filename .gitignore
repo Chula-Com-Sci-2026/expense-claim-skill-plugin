@@ -3,6 +3,7 @@ audit-log.txt
 agent-invocations.log
 EXPENSE_CLAIM_REVIEW.md
 exceptions-queue.csv
+finance-review.csv
 
 # python
 __pycache__/

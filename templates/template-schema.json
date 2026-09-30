@@ -1,0 +1,76 @@
+{
+  "template_version": "1.0",
+  "description": "Machine-readable schema for the submission and finance-review templates. Validators read this file; column lists are never hardcoded elsewhere.",
+  "enums": {
+    "category": ["meal", "transport", "accommodation", "flight", "supplies", "other"],
+    "self_flag": ["", "LIKELY-OVER-CAP", "LIKELY-NON-REIMBURSABLE", "LIKELY-NEEDS-APPROVAL", "MISSING-DATA"],
+    "decision": ["APPROVE", "REDUCE", "REJECT", "ESCALATE"],
+    "verdict_code": ["", "WITHIN-POLICY", "OVER-CAP", "NON-REIMBURSABLE", "NEEDS-APPROVAL", "DUPLICATE",
+                     "OUT-OF-WINDOW", "MISSING-DATA", "MISSING-RECEIPT", "MANIFEST-MISMATCH"]
+  },
+  "submission": {
+    "file": "submission.csv",
+    "written_by": "employee side (expense-submit)",
+    "columns": [
+      {"name": "line",           "required": true,  "type": "int",      "rule": "1..n, unique, consecutive"},
+      {"name": "date",           "required": true,  "type": "date",     "format": "YYYY-MM-DD"},
+      {"name": "vendor",         "required": true,  "type": "string",   "rule": "part of the duplicate key"},
+      {"name": "description",    "required": true,  "type": "string"},
+      {"name": "category",       "required": true,  "type": "enum:category"},
+      {"name": "price",          "required": false, "type": "decimal",  "rule": "blank only when self_flag = MISSING-DATA"},
+      {"name": "currency",       "required": true,  "type": "iso4217"},
+      {"name": "receipt_file",   "required": false, "type": "path",     "rule": "must exist under receipts/ when present; blank allowed only for per-diem lines or items the policy exempts from receipts"},
+      {"name": "receipt_total",  "required": false, "type": "decimal",  "rule": "printed total of the receipt; same value on every line split from that receipt"},
+      {"name": "self_flag",      "required": false, "type": "enum:self_flag"},
+      {"name": "employee_note",  "required": false, "type": "string"}
+    ],
+    "forbidden_columns": ["decision", "claimable_amount", "approved"],
+    "cross_row_rules": [
+      "For each receipt_file: sum(price) of its lines == receipt_total (tolerance 0.01)",
+      "No two lines share vendor + date + price + receipt_file"
+    ],
+    "companion_file": {"file": "trip.md", "template": "trip-template.md"}
+  },
+  "finance_review": {
+    "file": "finance-review.csv",
+    "written_by": "finance side (expense-review / claim-writer)",
+    "role": "source of truth — claims.csv and exceptions-queue.csv are derived from it",
+    "columns": [
+      {"name": "claim_id",             "required": true,  "type": "string"},
+      {"name": "line",                 "required": true,  "type": "int",     "rule": "matches submission.csv line"},
+      {"name": "date",                 "required": true,  "type": "date"},
+      {"name": "vendor",               "required": true,  "type": "string"},
+      {"name": "description",          "required": true,  "type": "string"},
+      {"name": "category",             "required": true,  "type": "enum:category"},
+      {"name": "currency",             "required": true,  "type": "iso4217"},
+      {"name": "submitted_amount",     "required": false, "type": "decimal", "rule": "copied from submission; blank if the employee left it blank"},
+      {"name": "receipt_amount",       "required": false, "type": "decimal", "rule": "finance's own re-read of the receipt; blank if unreadable"},
+      {"name": "decision",             "required": true,  "type": "enum:decision"},
+      {"name": "claimable_amount",     "required": true,  "type": "decimal"},
+      {"name": "non_claimable_amount", "required": true,  "type": "decimal"},
+      {"name": "verdict_code",         "required": false, "type": "enum:verdict_code"},
+      {"name": "policy_clause",        "required": true,  "type": "string",  "rule": "clause ID from the stored policy, or UNSPECIFIED"},
+      {"name": "reason",               "required": true,  "type": "string"},
+      {"name": "receipt_file",         "required": false, "type": "path"},
+      {"name": "action_needed",        "required": false, "type": "string",  "rule": "required when decision = ESCALATE"}
+    ],
+    "row_rules": [
+      "base = receipt_amount if present, else submitted_amount",
+      "APPROVE  → claimable_amount == base and non_claimable_amount == 0",
+      "REDUCE   → 0 < claimable_amount < base and non_claimable_amount == base - claimable_amount",
+      "REJECT   → claimable_amount == 0 and non_claimable_amount == base",
+      "ESCALATE → claimable_amount == 0 and non_claimable_amount == 0 and action_needed is not blank",
+      "receipt_amount != submitted_amount → verdict_code == MANIFEST-MISMATCH and reason states both numbers",
+      "currency != policy reporting currency → decision == ESCALATE unless the policy defines an FX source"
+    ],
+    "file_rules": [
+      "exactly one row per submission.csv line, same line numbers",
+      "claims.csv rows appended by this review == rows with decision APPROVE or REDUCE; their claimable sum == sum(claimable_amount)",
+      "exceptions-queue.csv rows appended by this review == rows with decision ESCALATE"
+    ],
+    "derived_outputs": {
+      "claims.csv":           {"from_decisions": ["APPROVE", "REDUCE"], "columns": ["date", "vendor", "category", "claimable_amount", "receipt_file", "review_date"]},
+      "exceptions-queue.csv": {"from_decisions": ["ESCALATE"],          "columns": ["date", "vendor", "amount", "reason", "receipt_file"], "mapping": {"amount": "submitted_amount", "reason": "verdict_code + ': ' + reason"}}
+    }
+  }
+}

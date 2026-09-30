@@ -14,9 +14,11 @@ flowchart LR
   H --> F["Finance<br/>reviews against policy"]
   P["Company policy<br/>stored once"] --> F
   L["claims.csv<br/>what was paid before"] --> F
-  F --> OK["Approved lines<br/>-> claims.csv"]
-  F --> EX["Exceptions<br/>-> a human decides"]
-  F --> RP["Audit report<br/>a clause per decision"]
+  F --> FR["finance-review.csv<br/>one decision per line"]
+  FR --> OK["Approved lines<br/>-> claims.csv"]
+  FR --> EX["Escalations<br/>-> a human decides"]
+  FR --> RJ["Rejected lines<br/>-> stay here, not paid"]
+  FR --> RP["Audit report<br/>a clause per decision"]
 
 %% ---------------------------------------------------------------------------
 %% 2. The detailed view — the two-lane pipeline
@@ -25,22 +27,25 @@ flowchart TB
   subgraph EMP["EMPLOYEE — advisory only, never approves"]
     A["/expense-claim-review:expense-submit"] --> B{"Receipts given?"}
     B -->|No| C["Ask: photos, PDFs, or folder path"] --> D
-    B -->|Yes| D["Extract per line: date, vendor,<br/>description, category, price, currency"]
-    D --> E["Self-check flags<br/>LIKELY-* only, never a claimable amount"]
-    E --> F["submission.csv"] --> G["Google Sheet:<br/>Expense Submission"]
+    B -->|Yes| D["receipt-reader agent:<br/>date, vendor, description,<br/>category, price, currency, receipt_total"]
+    D --> E["Self-check flags — optional<br/>LIKELY-* only, never a claimable amount"]
+    E --> V1["validate_submission.py<br/>fix what you can; show 'Needed from you'"]
+    V1 --> F["submission.csv — the only file"] --> G["Google Sheet:<br/>Expense Submission"]
   end
 
   subgraph FIN["FINANCE — the only side that may approve"]
     H["/expense-claim-review:expense-review"] --> I{"Policy configured?"}
     I -->|No| J["/expense-claim-review:setup-expense-policy<br/>attach the document or write the rules"] --> I
     I -->|Yes| K["Load ~/.expense-claim-review/policy.md<br/>+ meta.json UNSPECIFIED list"]
-    K --> L["Re-read the original receipts<br/>verify; do not trust the submission"]
-    L --> M["One verdict per line, with its clause<br/>WITHIN-POLICY / OVER-CAP / NON-REIMBURSABLE /<br/>NEEDS-APPROVAL / DUPLICATE / OUT-OF-WINDOW /<br/>MISSING-DATA / MANIFEST-MISMATCH / UNSPECIFIED"]
-    M --> N["Write the outputs"]
-    N --> O["EXPENSE_CLAIM_REVIEW.md"]
-    N --> P["claims.csv (approved only)"]
-    N --> Q["exceptions-queue.csv"]
-    P --> R["Google Sheet:<br/>Expense Review"]
+    K --> L["receipt-reader agent:<br/>re-read the original receipts<br/>verify; do not trust the submission"]
+    L --> M["policy-checker agent:<br/>one verdict AND one decision per line<br/>WITHIN-POLICY / OVER-CAP / NON-REIMBURSABLE /<br/>NEEDS-APPROVAL / DUPLICATE / OUT-OF-WINDOW /<br/>MISSING-DATA / MISSING-RECEIPT / MANIFEST-MISMATCH<br/>-> APPROVE / REDUCE / REJECT / ESCALATE"]
+    M --> N["claim-writer agent"]
+    N --> FR["finance-review.csv<br/>source of truth, every line"]
+    FR --> P["claims.csv<br/>derived: APPROVE + REDUCE"]
+    FR --> Q["exceptions-queue.csv<br/>derived: ESCALATE"]
+    FR --> O["EXPENSE_CLAIM_REVIEW.md<br/>summary block first"]
+    FR --> V2["validate_review.py<br/>fix until it passes"]
+    FR --> R["Google Sheet:<br/>Expense Review"]
     LED[("claims.csv<br/>prior claims")] -.->|"duplicate key:<br/>vendor + date + amount"| M
   end
 
@@ -52,22 +57,30 @@ flowchart TB
     S2["PostToolUse Write|Edit:<br/>append to audit-log.txt"]
     S3["PreToolUse Agent:<br/>append to agent-invocations.log"]
   end
-  S1 -.-> N
-  S2 -.-> N
+  S1 -.-> FR
+  S2 -.-> FR
+  S3 -.-> M
 
 %% ---------------------------------------------------------------------------
-%% 3. Agents — defined, but NOT on the measured path
+%% 3. Agents — delegated on purpose since 0.3.0
 %% ---------------------------------------------------------------------------
-%% The plugin declares four agents. The benchmark in bench/ recorded ZERO Agent
-%% invocations across every run, including setup: the skills executed their steps
-%% inline instead of delegating. The negative is evidenced, not assumed — the
-%% PostToolUse hook wrote audit-log.txt in those same runs, so hooks were live and
-%% an Agent call would have been logged by S3 above.
+%% History matters here. In 0.2.0 the plugin declared four agents and the September
+%% 2026 benchmark recorded ZERO Agent invocations across sixteen runs: the skills
+%% ran every step inline. That lane was drawn dashed for exactly that reason.
 %%
-%% Draw this lane dashed, or leave it off a slide that also shows the benchmark
-%% result, or the diagram will contradict the measurement.
+%% 0.3.0 makes delegation an instruction rather than an option — each skill names
+%% the agent and says not to do the step inline — so the lane is drawn solid. The
+%% evidence is agent-invocations.log, written by the PreToolUse hook on Agent (S3),
+%% and golden-path.sh fails if it does not name all three finance-side agents.
+%% If a future measurement shows the calls are not happening, redraw it dashed
+%% again rather than leaving the diagram ahead of the facts.
 flowchart LR
-  SK["Skill step"] -. "available, not observed" .-> AG1["receipt-reader"]
-  SK -. "available, not observed" .-> AG2["policy-checker"]
-  SK -. "available, not observed" .-> AG3["claim-writer"]
-  SET["setup-expense-policy"] -. "available, not observed" .-> AG4["policy-normalizer"]
+  SUBMIT["expense-submit"] --> AG1["receipt-reader"]
+  REVIEW["expense-review"] --> AG1
+  AG1 --> AG2["policy-checker"]
+  AG2 --> AG3["claim-writer"]
+  SET["setup-expense-policy"] --> AG4["policy-normalizer"]
+  AG1 -.-> LOG[("agent-invocations.log")]
+  AG2 -.-> LOG
+  AG3 -.-> LOG
+  AG4 -.-> LOG
