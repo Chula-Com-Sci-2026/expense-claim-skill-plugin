@@ -36,7 +36,8 @@ bash tests/golden-path.sh --reset   # restore claims.csv, clear outputs, before 
 and `tests/golden-path.sh` grades the artifacts a review leaves behind — you drive the
 skill, the script scores the result. The rest is prose executed by a model, so it is
 verified manually — the full matrix, including the adversarial invariant cases, is in
-`docs/TEST-CASES.md`, with fixtures in `examples/edge-cases/`. The regression check is
+`../expense-claim-review-docs/TEST-CASES.md`, with fixtures in `examples/edge-cases/`.
+The regression check is
 the example trip: a correct review yields **THB 980** claimable and **THB 480**
 non-claimable, with line 1 `APPROVE`, line 2 `REDUCE` to the 800 dinner cap, line 3
 (the beer) `REJECT`, line 4 `ESCALATE` (`NEEDS-APPROVAL`), line 5 `ESCALATE`
@@ -96,21 +97,29 @@ expense-review        →  finance-review.csv  →  claims.csv
   — the matcher is **`Agent`**, not `Task`; that is the tool's name in Claude Code 2.x,
   and grepping for `Task` finds nothing.
 
-### Docs and diagrams
+### Docs and diagrams live outside the repo
 
-`docs/flow.mmd` is the **only** diagram source — three views in one Mermaid file: a
-simple one for a non-technical reader, the detailed two-lane pipeline, and the agent
-lane. A generated `flow.excalidraw` and its `flow.gen.py` generator used to sit beside
-it; all three drifted apart, so the copies were deleted rather than maintained. Paste
-the Mermaid into Excalidraw (hamburger menu > Mermaid to Excalidraw) if you need an
-editable picture.
+`docs/` was removed in 0.3.0. Nothing in the runtime path ever read it — the skills
+resolve only `~/.expense-claim-review/`, `${CLAUDE_PLUGIN_ROOT}/templates/` and
+`${CLAUDE_PLUGIN_ROOT}/scripts/` — so the reading material now sits beside the repo at
+`../expense-claim-review-docs/`, untracked:
 
-Keep the diagram honest about agents. A September 2026 benchmark measured **zero**
-invocations across sixteen runs of **0.2.0**, and the agent lane was drawn dashed for
-that reason. 0.3.0 makes delegation an instruction, so the lane is now solid — backed by
-`agent-invocations.log` and `GP-22`…`GP-24`. If a future measurement shows the calls are
-not happening, redraw it dashed rather than leaving the diagram ahead of the facts. The
-0.2.0 evidence is `docs/benchmark-report.html`.
+- `flow.mmd` — the **only** diagram source; three views in one Mermaid file (simple,
+  the detailed two-lane pipeline, the agent lane). Paste into Excalidraw (hamburger
+  menu > Mermaid to Excalidraw) for an editable picture. A generated `flow.excalidraw`
+  and its `flow.gen.py` used to sit beside it; all three drifted apart, so the copies
+  were deleted rather than maintained.
+- `TEST-CASES.md` — the full manual matrix, including the adversarial invariant cases.
+- `benchmark-report.html` — the 0.2.0 measurement.
+
+Keep the diagram honest about agents. That benchmark measured **zero** invocations
+across sixteen runs of **0.2.0**, and the agent lane was drawn dashed for that reason.
+0.3.0 makes delegation an instruction, so the lane is now solid — backed by
+`agent-invocations.log` and `GP-22`…`GP-24`. If a future measurement shows the calls
+are not happening, redraw it dashed rather than leaving the diagram ahead of the facts.
+
+Because those files are outside git, a change to a skill that invalidates the diagram
+or the matrix will not show up in a diff. Update them by hand when the pipeline moves.
 
 The marketplace is named `expense-tools`, not the plugin name, so the install id is
 `expense-claim-review@expense-tools`.

@@ -15,4 +15,4 @@ Two more cases need no fixture, only an edit to `submission.csv`:
 - **`REV-03` `MANIFEST-MISMATCH`** — change the lunch `price` from `180` to `1800`.
 - **`REV-04` `MISSING-RECEIPT`** — point a row's `receipt_file` at a file that does not exist.
 
-See `docs/TEST-CASES.md` for the full matrix.
+See `TEST-CASES.md` in `../../../expense-claim-review-docs/` for the full matrix.
